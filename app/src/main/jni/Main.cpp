@@ -15,7 +15,7 @@
 #include "Menu/Menu.hpp"
 #include "Menu/Jni.hpp"
 #include "Includes/Macros.h"
-#include "dobby.h"
+#include "Dobby/dobby.h"
 
 // ==================== متغيرات التحكم ====================
 bool godMode = false;
