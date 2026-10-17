@@ -12,8 +12,9 @@ workflows:
           echo "Downloading NDK r26b..."
           curl -L -o $CM_BUILD_DIR/ndk.zip https://dl.google.com/android/repository/android-ndk-r26b-darwin-x86_64.zip
           unzip -o $CM_BUILD_DIR/ndk.zip -d $CM_BUILD_DIR
+          NDK_DIR_NAME=$(ls -d $CM_BUILD_DIR/android-ndk-* | head -n 1)
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-          echo "ndk.dir=$CM_BUILD_DIR/android-ndk-r26b" >> "$CM_BUILD_DIR/local.properties"
+          echo "ndk.dir=$NDK_DIR_NAME" >> "$CM_BUILD_DIR/local.properties"
       - name: Build APK
         script: |
           cd $CM_BUILD_DIR
