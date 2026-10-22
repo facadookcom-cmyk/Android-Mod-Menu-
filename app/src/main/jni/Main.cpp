@@ -107,14 +107,3 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint feature, jboolean bool
         case 3: speedHack = boolean; break;
     }
 }
-
-// ==================== دالة التحميل ====================
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
-    JNIEnv *env;
-    vm->GetEnv((void**)&env, JNI_VERSION_1_6);
-    
-    pthread_t ptid;
-    pthread_create(&ptid, NULL, hack_thread, NULL);
-    
-    return JNI_VERSION_1_6;
-}
