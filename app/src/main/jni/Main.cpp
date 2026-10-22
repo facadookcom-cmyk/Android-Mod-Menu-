@@ -22,25 +22,49 @@ bool godMode = false;
 bool highDamage = false;
 bool infiniteAmmo = false;
 bool speedHack = false;
+bool zombieOneHit = false;
 
-// ==================== عناوين RVA ====================
+// ==================== عناوين RVA (من الدامب) ====================
 #define RVA_Player_OnHPUpdated 0xB1EA80 
+// #define RVA_Gun_Update 0x?????? (محتاجين العنوان ده عشان نعدل السلاح)
+// #define RVA_Zombie_Update 0x?????? (محتاجين العنوان ده عشان نعدل الزومبي)
 
 // ==================== الأوفستات (Offsets) ====================
+// BaseNetworkPlayer
 #define OFFSET_PLAYER_HP 0x6C
 #define OFFSET_PLAYER_CHARACTER 0x68
-#define OFFSET_GUN_DAMAGE 0x98 
-#define OFFSET_GUN_AMMO_IN_MAG 0x50 
-#define OFFSET_GUN_MAG_SIZE 0x54 
+
+// Gun
+#define OFFSET_GUN_DAMAGE 0x7C 
+#define OFFSET_GUN_AMMO_IN_MAG 0xB0 
+#define OFFSET_GUN_MAG_SIZE 0xAC 
+
+// Zombie
+#define OFFSET_ZOMBIE_HP 0x54
 
 // ==================== دوال الهوك (Hook) ====================
 void* (*old_Player_OnHPUpdated)(void* instance, float oldValue, float newValue);
 
 void* Player_OnHPUpdated(void* instance, float oldValue, float newValue) {
     if (instance != NULL) {
+        // 1. God Mode
         if (godMode) {
             *(float*)((uintptr_t)instance + OFFSET_PLAYER_HP) = 100.0f;
         }
+        
+        // 2. High Damage & Infinite Ammo
+        // (هنحتاج نعرف إزاي نوصل للسلاح من اللاعب عشان نفعلهم)
+        /*
+        if (highDamage || infiniteAmmo) {
+            void* character = *(void**)((uintptr_t)instance + OFFSET_PLAYER_CHARACTER);
+            if (character != NULL) {
+                // هنا بنفترض إن الكاركتر جواه مؤشر للسلاح
+                // void* gun = *(void**)((uintptr_t)character + 0x??); 
+                // if (highDamage) *(float*)((uintptr_t)gun + OFFSET_GUN_DAMAGE) = 999.0f;
+                // if (infiniteAmmo) *(int*)((uintptr_t)gun + OFFSET_GUN_AMMO_IN_MAG) = 999;
+            }
+        }
+        */
     }
     return old_Player_OnHPUpdated(instance, oldValue, newValue);
 }
@@ -50,9 +74,13 @@ void* hack_thread(void* arg) {
     while (!isLibraryLoaded("libil2cpp.so")) {
         sleep(1);
     }
+    
     uintptr_t libBase = (uintptr_t)getAbsoluteAddress("libil2cpp.so", 0);
+    
+    // تفعيل الهوك للاعب (God Mode)
     void* addr_Player = (void*)(libBase + RVA_Player_OnHPUpdated);
     DobbyHook(addr_Player, (void*)Player_OnHPUpdated, (void**)&old_Player_OnHPUpdated);
+    
     return NULL;
 }
 
@@ -64,6 +92,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
         OBFUSCATE("Toggle_High Damage"),
         OBFUSCATE("Toggle_Infinite Ammo"),
         OBFUSCATE("Toggle_Speed Hack"),
+        OBFUSCATE("Toggle_Zombie One Hit"),
     };
     int TotalFeatures = sizeof(features) / sizeof(features[0]);
     jclass stringClass = env->FindClass("java/lang/String");
@@ -82,5 +111,6 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint feature, jstring text,
         case 1: highDamage = boolValue; break;
         case 2: infiniteAmmo = boolValue; break;
         case 3: speedHack = boolValue; break;
+        case 4: zombieOneHit = boolValue; break;
     }
 }
